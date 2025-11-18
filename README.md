@@ -9,6 +9,8 @@
 | **Sales Prediction**          | Historical sales, promotions, seasonality     | 1. Aggregate historical sales by shop / brand and time periods.<br>2. Feature engineering: promotions, seasonality, holidays, external factors.<br>3. Train linear regression or time series models (ARIMA, Prophet, Vertex AI Forecasting).<br>4. Output predicted sales to analytic layer for dashboards and planning. | regression / time series model  |
 | **Conversion Funnel Analysis**               | Website/app behavior data                     | 1. Extract sessions, page views, conversion events.<br>2. Build funnel: page view → add to cart → purchase.<br>3. Calculate drop-off rates at each stage.                                                                                                                                                                | -                               |
 | **Marketing Response Prediction**            | Campaign + customer behavior                  | 1. Merge campaign, demographic, and behavioral features.<br>2. Train binary classification model (responded / not).<br>3. Predict for new campaigns.                                                                                                                                                                     | classification model            |
+| **Customer Review Comment Analysis(GCP)** | Customer text reviews, ratings, product metadata | 1. Collect and load customer review text into DWH.<br>2. Perform text preprocessing (tokenization, stopword removal, lemmatization;).<br>3. Apply sentiment analysis using pretrained models (e.g., Vertex AI Text Sentiment API).<br>4. Classify comments into positive/neutral/negative categories.<br>5. Use topic modeling (LDA, BERTopic) to detect common themes such as “delivery issues”, “quality complaints”, “feature requests”.<br>6. Aggregate sentiment and topics by product, brand, segment to identify improvement areas.<br>7. Output insights to analytics layer or BI dashboard. | NLP (Sentiment analysis + Topic modeling) |
+
 
 ## Analytic-Platform on GCP
 ```mermaid
@@ -19,7 +21,10 @@ flowchart TB
 
         DWH_BQ["BigQuery DWH"]
         FEATURE_BQ["Feature Store: Aggregate RFM, CLV features, campaign metrics"]
+        REVIEW_TABLE["Customer Review Text Table"]
+
         DWH_BQ --> FEATURE_BQ
+        DWH_BQ --> REVIEW_TABLE
 
         CP["Campaign Performance\nSQL"]
         DWH_BQ --> CP
@@ -32,10 +37,11 @@ flowchart TB
 
         CS["Customer Segmentation\nK-Means clustering"]
         CLV["CLV Prediction\nXGBoost Regression"]
-        
         SP["Sales Prediction\nXGBoost Regression， Timeseries"]
         MARKETING["Marketing Response Prediction\nBinary classification"]
         FUNNEL["Conversion Funnel Analysis\nSQL aggregation"]
+
+        REVIEW_ANALYSIS["Customer Review Comment Analysis\n(Vertex AI Text API: Sentiment + Topics)"]
 
         FEATURE_BQ --> CS
         FEATURE_BQ --> CLV
@@ -43,17 +49,20 @@ flowchart TB
         FEATURE_BQ --> MARKETING
         FEATURE_BQ --> FUNNEL
 
+        REVIEW_TABLE --> REVIEW_ANALYSIS
+
         CS --> ANALYTIC_LAYER
         CLV --> ANALYTIC_LAYER
-        sp --> ANALYTIC_LAYER
+        SP --> ANALYTIC_LAYER
         MARKETING --> ANALYTIC_LAYER
         FUNNEL --> ANALYTIC_LAYER
+        REVIEW_ANALYSIS --> ANALYTIC_LAYER
     end
 
     %% === Analytic Layer ===
     subgraph ANALYTIC_LAYER["Analytic Layer / Dashboard"]
         style ANALYTIC_LAYER fill:#e6fff3,stroke:#33aa66,stroke-width:1px
-        DASHBOARD["Visualize segments, CLV, campaign performance, funnel"]
+        DASHBOARD["Visualize segments, CLV, campaign performance, funnel, review sentiment & topics"]
     end
 
     %% === Containerization & CI/CD ===
@@ -82,6 +91,7 @@ flowchart TB
     CP --> SDK
     MARKETING --> SDK
     FUNNEL --> SDK
+    REVIEW_ANALYSIS --> SDK
 
     %% === CI/CD Flows ===
     DOCKER --> ARTIFACT --> CI_CD --> ML_PIPELINE
