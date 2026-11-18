@@ -1,6 +1,11 @@
-# Analytic-Platform（GCP, Snowflake, Databricks）
+# Analytic-Platform (GCP, Snowflake, Databricks)
+
+[English](README.md) | [日本語](README.ja.md) | [简体中文](README.zh-CN.md)
+
+Diagrams use English labels in all language versions.
 
 ## Analytics Objectives
+
 | Objective                                    | Data Needed                                   | Steps / Implementation                                                                                                                                                                                                                                                                                                   | Model Type                      |
 | -------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
 | **Customer Segmentation**                    | Customer demographics, transaction history    | 1. Load customer transaction data to DWH.<br>2. Aggregate RFM features (Recency, Frequency, Monetary).<br>3. Cluster customers using K-Means (Vertex AI / Spark MLlib / scikit-learn).                                                                                                                                   | clustering model (unsupervised) |
@@ -11,8 +16,8 @@
 | **Marketing Response Prediction**            | Campaign + customer behavior                  | 1. Merge campaign, demographic, and behavioral features.<br>2. Train binary classification model (responded / not).<br>3. Predict for new campaigns.                                                                                                                                                                     | classification model            |
 | **Customer Review Comment Analysis(GCP)** | Customer text reviews, ratings, product metadata | 1. Collect and load customer review text into DWH.<br>2. Perform text preprocessing (tokenization, stopword removal, lemmatization;).<br>3. Apply sentiment analysis using pretrained models (e.g., Vertex AI Text Sentiment API).<br>4. Classify comments into positive/neutral/negative categories.<br>5. Use topic modeling (LDA, BERTopic) to detect common themes such as “delivery issues”, “quality complaints”, “feature requests”.<br>6. Aggregate sentiment and topics by product, brand, segment to identify improvement areas.<br>7. Output insights to analytics layer or BI dashboard. | NLP (Sentiment analysis + Topic modeling) |
 
-
 ## Analytic-Platform on GCP
+
 ```mermaid
 flowchart TB
     %% === Sources & DWH ===
@@ -37,7 +42,7 @@ flowchart TB
 
         CS["Customer Segmentation\nK-Means clustering"]
         CLV["CLV Prediction\nXGBoost Regression"]
-        SP["Sales Prediction\nXGBoost Regression， Timeseries"]
+        SP["Sales Prediction\nXGBoost Regression / Time Series"]
         MARKETING["Marketing Response Prediction\nBinary classification"]
         FUNNEL["Conversion Funnel Analysis\nSQL aggregation"]
 
@@ -73,7 +78,7 @@ flowchart TB
         CI_CD["Cloud Build"]
     end
 
-    %% ==== MONITORING ==== 
+    %% ==== MONITORING ====
     subgraph MONITOR["Monitoring & Automation"]
         style MONITOR fill:#e6fff3,stroke:#33aa66,stroke-width:1px
         SDK["Cloud SDK Collector"]
@@ -97,8 +102,8 @@ flowchart TB
     DOCKER --> ARTIFACT --> CI_CD --> ML_PIPELINE
 ```
 
-
 ## Analytic-Platform on Snowflake
+
 ```mermaid
 flowchart LR
 
@@ -178,6 +183,7 @@ style MON fill:#FFEBEE,stroke:#E53935
 ```
 
 ## Analytic-Platform on Databricks
+
 ```mermaid
 flowchart TB
 
